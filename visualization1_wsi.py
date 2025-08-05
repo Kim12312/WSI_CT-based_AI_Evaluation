@@ -14,7 +14,6 @@ for index1 in range(len(case_ids1)):
             
         model_file="./Figure1/"
         imgdata2=np.load("./wsi_visualization_data/"+str(case_ids1[index1])+"_test1.npy")
-        ori_data1 = np.load("./wsi_visualization_data/"+str(case_ids1[index1])+".npy")
         print('start')
         if not os.path.isdir(model_file):
             os.makedirs(model_file)
@@ -37,3 +36,4 @@ for index1 in range(len(case_ids1)):
         continue
         
     
+
