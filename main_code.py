@@ -346,7 +346,6 @@ def summary_survival(model, loader):
             Y_hat = model(x_path=data_WSI, x_path1=ctdata)
 
 def validate(datasets: tuple, args: Namespace, model_file: str):
-    print('\nInit train/val/test splits...', end=' ')
     train_split, val_split = datasets
     print('Done!')
     print("Validating on {} samples".format(len(val_split)))
