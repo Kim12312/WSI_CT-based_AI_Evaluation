@@ -147,10 +147,10 @@ def init_max_weights(module):
 class Embedding(nn.Module):  # Patch Embedding + Position Embedding + Class Embedding
     def __init__(self, image_channels=3, image_size=224, patch_size=16, dim=768, drop_ratio=0.):
         super(Embedding, self).__init__()
-        self.num_patches = (image_size // patch_size) ** 2  # Patch数量
+        self.num_patches = (image_size // patch_size) ** 2  
 
-        self.patch_conv = nn.Conv2d(image_channels, dim, patch_size, patch_size)  # 使用卷积将图像划分成Patches
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, dim))  # class embedding
+        self.patch_conv = nn.Conv2d(image_channels, dim, patch_size, patch_size)  
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, dim))  
         self.pos_emb = nn.Parameter(torch.zeros(1, self.num_patches + 1, dim))  # position embedding
         self.dropout = nn.Dropout(drop_ratio)
 
@@ -168,7 +168,7 @@ class MultiHeadAttention(nn.Module):  # Multi-Head Attention
         self.num_heads = num_heads
         self.head_dim = dim // num_heads
 
-        self.qkv = nn.Linear(dim, dim * 3, bias=False)  # 使用一个Linear，计算得到qkv
+        self.qkv = nn.Linear(dim, dim * 3, bias=False)  
         self.dropout = nn.Dropout(drop_ratio)
         self.proj = nn.Linear(dim, dim)
 
@@ -176,13 +176,12 @@ class MultiHeadAttention(nn.Module):  # Multi-Head Attention
         # B: Batch Size / P: Num of Patches / D: Dim of Patch / H: Num of Heads / d: Dim of Head
         qkv = self.qkv(x)
         qkv = rearrange(qkv, "B P (C H d) -> C B H P d", C=3, H=self.num_heads, d=self.head_dim)
-        q, k, v = qkv[0], qkv[1], qkv[2]  # 分离qkv
+        q, k, v = qkv[0], qkv[1], qkv[2] 
         k = rearrange(k, "B H P d -> B H d P")
-        # Attention(Q, K, V ) = softmax(QKT/dk)V （T表示转置)
-        attn = torch.matmul(q, k) * self.head_dim ** -0.5  # QKT/dk
-        attn = F.softmax(attn, dim=-1)  # softmax(QKT/dk)
+        attn = torch.matmul(q, k) * self.head_dim ** -0.5 
+        attn = F.softmax(attn, dim=-1) 
         attn = self.dropout(attn)
-        x = torch.matmul(attn, v)  # softmax(QKT/dk)V
+        x = torch.matmul(attn, v)  
         x = rearrange(x, "B H P d -> B P (H d)")
         x = self.proj(x)
         x = self.dropout(x)
@@ -192,7 +191,7 @@ class MLP(nn.Module):  # MLP
     def __init__(self, in_dims, hidden_dims=None, drop_ratio=0.):
         super(MLP, self).__init__()
         if hidden_dims is None:
-            hidden_dims = in_dims * 4  # linear的hidden_dims默认为in_dims的4倍
+            hidden_dims = in_dims * 4  
 
         self.fc1 = nn.Linear(in_dims, hidden_dims)
         self.fc2 = nn.Linear(hidden_dims, in_dims)
@@ -219,27 +218,25 @@ class EncoderBlock(nn.Module):  # Transformer Encoder Block
         self.mlp = MLP(dim)
 
     def forward(self, x):
-        # 两次残差连接，分别在Multi-Head Attention和MLP之后
         x0 = x
         x = self.layernorm1(x)
         x = self.multiheadattn(x)
         x = self.dropout(x)
-        x1 = x + x0  # 第一次残差连接
+        x1 = x + x0  
         x = self.layernorm2(x1)
         x = self.mlp(x)
         x = self.dropout(x)
-        return x + x1  # 第二次残差连接
+        return x + x1  
 
 class MLPHead(nn.Module):  # MLP Head
     def __init__(self, dim, num_classes=1000):
         super(MLPHead, self).__init__()
         self.layernorm = nn.LayerNorm(dim)
-        # 对于一般数据集，此处为1层Linear; 对于ImageNet-21k数据集，此处为Linear+Tanh+Linear
         self.mlphead = nn.Linear(dim, num_classes)
 
     def forward(self, x):
         x = self.layernorm(x)
-        cls = x[:, 0, :]  # 去除class token
+        cls = x[:, 0, :]  
         return self.mlphead(cls)
 
 class ViT(nn.Module):  # Vision Transformer
@@ -248,7 +245,7 @@ class ViT(nn.Module):  # Vision Transformer
         super(ViT, self).__init__()
         self.embedding = Embedding(image_channels, image_size, patch_size, dim)
         self.encoder = nn.Sequential(
-            *[EncoderBlock(dim, num_heads) for i in range(layers)]  # encoder结构为layers(L)个Transformer Encoder Block
+            *[EncoderBlock(dim, num_heads) for i in range(layers)]  
         )
         self.head = MLPHead(dim, num_classes)
 
@@ -388,7 +385,6 @@ def main(args):
 
 ### Training settings
 parser = argparse.ArgumentParser(description='Configurations for Survival Analysis.')
-### Checkpoint + Misc. Pathing Parameters
 parser.add_argument('--data_root_dir', type=str, default="./graph_files/", help='data directory')
 parser.add_argument('--seed',            type=int, default=1, help='Random seed for reproducible experiment (default: 1)')
 parser.add_argument('--results_dir',     type=str, default='./results', help='Results directory (Default: ./results)')
