@@ -387,7 +387,7 @@ def main(args):
     print('Time: %f seconds' % (end - start))
 
 ### Training settings
-parser = argparse.ArgumentParser(description='Configurations for Survival Analysis on TCGA Data.')
+parser = argparse.ArgumentParser(description='Configurations for Survival Analysis.')
 ### Checkpoint + Misc. Pathing Parameters
 parser.add_argument('--data_root_dir', type=str, default="./graph_files/", help='data directory')
 parser.add_argument('--seed',            type=int, default=1, help='Random seed for reproducible experiment (default: 1)')
